@@ -1,0 +1,78 @@
+#!/data/data/com.termux/files/usr/bin/bash
+
+#################
+# No-IP Updater
+# Author Hax4Us
+#################
+
+check_deps() {
+	printf "[*] checking for curl ..."
+	if [ ! -f $PREFIX/bin/curl ] 
+	then
+		apt install curl -y
+	fi
+	echo " ✓"
+}
+
+update() {
+	dummyip="127.0.0.1"
+	status=$($PREFIX/bin/curl -s -A "${1}" -u "${2}":"${3}" "${4}")
+	status1=$(echo $status | cut -d ' ' -f1)
+	status2=$(echo $status | cut -d ' ' -f2)
+
+	case "${status1}" in
+
+    "good")
+	    if [[ "${status2}" == *"$dummyip"* ]]
+	    then
+		    echo "Dummy update successful"
+	    else
+		    echo "Updated to $status2"
+	    fi
+        ;;
+    "nochg")
+        echo "Same IP exists"
+        ;;
+    "nohost")
+        echo "hostname not found"
+	exit 1
+        ;;
+    "badauth")
+        echo "wrong credentials"
+	exit 2
+	;;
+    "badagent")
+        echo "contact to lkpandey950@gmail.com"
+	exit 3
+        ;;
+    "abuse")
+        echo "you are blocked , please contact to no-ip"
+	exit 4
+	;;
+    "911")
+        echo "A fatal error on no-ip side such as a database outage. Retry the update no sooner than 30 minutes."
+        exit 5
+	;;
+    *)
+        echo "something went wrong , try again"
+	exit 6
+        ;;
+esac
+}
+
+read -p "Email : " USER
+read -s -p "Password : " PWD
+echo
+read -p "HostName : " HOSTNAME
+ENCODEDHOSTNAME=$(echo ${HOSTNAME//./%2E})
+USERAGENT="no-ip updater/1.0 lkpandey950@gmail.com"
+DUMMYNOIPURL="https://dynupdate.no-ip.com/nic/update?hostname=${ENCODEDHOSTNAME}&myip=127.0.0.1"
+NOIPURL="https://dynupdate.no-ip.com/nic/update?hostname=${ENCODEDHOSTNAME}"
+check_deps
+update "$USERAGENT" "$USER" "$PWD" "$DUMMYNOIPURL"
+update "$USERAGENT" "$USER" "$PWD" "$NOIPURL"
+
+
+
+
+

@@ -1,0 +1,2 @@
+cp noipupdater $PREFIX/bin && chmod +x $PREFIX/bin/noipupdater
+echo "Done ✓"
